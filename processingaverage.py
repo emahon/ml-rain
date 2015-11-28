@@ -1,3 +1,9 @@
+"""
+Processes training data
+removes rainfall > 250 mm, averages all measurements done in same hour,
+and splits into two files based on reflectivity (>20 and <20)
+""" 
+
 import csv
 import numpy
 

@@ -1,3 +1,8 @@
+"""
+Processes test data
+splits data into two files based on reflectivity, >20 and <20
+"""
+
 import csv
 
 #big csvs require changing maximum size allowed: http://lethain.com/handling-very-large-csv-and-xml-files-in-python/
