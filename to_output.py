@@ -10,6 +10,8 @@ import csv
 def to_output(array, name):
     outwriter = csv.writer(open(name,'w'),delimiter=",")
     i = 1
+    #add header
+    outwriter.writerow(["Id","Expected"])
     for row in array:
         outwriter.writerow([i,row])
         i += 1
