@@ -12,3 +12,4 @@ def to_output(array, name):
     i = 1
     for row in array:
         outwriter.writerow([i,row])
+        i += 1
