@@ -118,5 +118,5 @@ def R_KDP (d) :
 	c = 50.7
 	b = 0.85
 
-	est = c * zh ** b / 12
+	est = c * kdp ** b / 12
 	return est, d[-1]
