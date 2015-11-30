@@ -10,8 +10,6 @@ at once if you like.
 
 Author: Ryan Gooch, 11/30/15
 """
-import numpy as np
-
 def R_ZDR_KDP (d) :
 	"""
 	R(ZDR, KDP)
@@ -22,6 +20,8 @@ def R_ZDR_KDP (d) :
 	Input: Sample (row) from Kaggle Data
 	Output: RR Estimate, RR Actual
 	"""
+	import numpy as np
+
 	kdp = d[19]
 	zdr = d[15]
 
@@ -44,6 +44,7 @@ def R_Zh_marshall_palmer (d) :
 	Input: Sample (row) from Kaggle Data
 	Output: RR Estimate, RR Actual
 	"""
+	import numpy as np
 
 	zh = d[7] # RefComposite
 
@@ -63,6 +64,7 @@ def R_Zh_nexrad (d) :
 	Input: Sample (row) from Kaggle Data
 	Output: RR Estimate, RR Actual
 	"""
+	import numpy as np
 
 	zh = d[7] # RefComposite
 
@@ -84,6 +86,8 @@ def R_ZDR_Zh (d) :
 	Input: Sample (row) from Kaggle Data
 	Output: RR Estimate, RR Actual
 	"""
+	import numpy as np
+
 	zh = d[7]
 	zdr = d[15]
 
@@ -107,6 +111,7 @@ def R_KDP (d) :
 	Input: Sample (row) from Kaggle Data
 	Output: RR Estimate, RR Actual
 	"""
+	import numpy as np
 
 	kdp = d[19] # RefComposite
 
