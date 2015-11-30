@@ -102,7 +102,6 @@ def R_ZDR_Zh (d) :
 	return est,d[-1]
 
 def R_KDP (d) :
-	def R_Zh_nexrad (d) :
 	"""
 	R(KDP)
 
