@@ -38,6 +38,20 @@ def getdata(fil) :
 	#spr.eliminate_zeros()
 	return np.array(X),np.array(y),data
 
+def gettestdata(fil) :
+	data = np.genfromtxt(fil,delimiter=',')
+	imp = Imputer(missing_values='NaN', strategy='median', axis=0)
+	X = imp.fit_transform(data[:,2:-1])
+	# X = []
+	# y = []
+	# for row in np.arange(0,data.shape[0]) :
+	# 	if np.isnan(data[row]).any() == False :
+	# 		X.append(data[row,2:-1])
+	# 		y.append(data[row,-1])
+	X = scale(X).copy()
+	#spr.eliminate_zeros()
+	return np.array(X)
+
 if __name__ == '__main__':
 	Xorig,yorig,data = getdata(fil = 'lessaverage.csv')
 
@@ -73,3 +87,10 @@ if __name__ == '__main__':
 
 	# estimator = RandomForestRegressor(random_state=rs, n_estimators=10)
 	# score = cross_val_score(estimator, X, y, scoring='mean_absolute_error')
+
+	Xtestorig = getdata(fil = 'avtest.csv')
+	filename = path.join(mkdtemp(), 'X.dat')
+	Xtest = np.memmap(filename,mode='w+',shape=Xtestorig.shape,dtype='float32')
+	Xtest[:] = Xtestorig[:]
+
+	preds = classifier.predict(Xtest)
