@@ -46,7 +46,7 @@ def R_Zh_marshall_palmer (d) :
 	"""
 	import numpy as np
 
-	zh = d[7] # RefComposite
+	zh = d[3] # Ref
 
 	# Coefficients
 	c = 0.0365
@@ -66,7 +66,7 @@ def R_Zh_nexrad (d) :
 	"""
 	import numpy as np
 
-	zh = d[7] # RefComposite
+	zh = d[3] # Ref
 
 	# Coefficients
 	c = 0.017
@@ -88,7 +88,7 @@ def R_ZDR_Zh (d) :
 	"""
 	import numpy as np
 
-	zh = d[7]
+	zh = d[3]
 	zdr = d[15]
 
 	# Coeffecients
@@ -112,7 +112,7 @@ def R_KDP (d) :
 	"""
 	import numpy as np
 
-	kdp = d[19] # RefComposite
+	kdp = d[19] 
 
 	# Coefficients
 	c = 50.7
