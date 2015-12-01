@@ -19,14 +19,24 @@ from sklearn import cross_validation,svm,metrics
 from tempfile import mkdtemp
 import os.path as path
 from sklearn.grid_search import GridSearchCV
+from sklearn.preprocessing import Imputer, scale
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.cross_validation import cross_val_score
 
 def getdata(fil) :
-	data = np.genfromtxt(fil,delimiter=',',filling_values=0)
-	data = np.where(np.isnan(data), 0, data).copy()
-	spr = csr_matrix(data[2:,:-1])
-	y = data[:,-1].copy()
+	data = np.genfromtxt(fil,delimiter=',')
+	imp = Imputer(missing_values='NaN', strategy='median', axis=0)
+	X = imp.fit_transform(data[:,2:-1])
+	# X = []
+	# y = []
+	# for row in np.arange(0,data.shape[0]) :
+	# 	if np.isnan(data[row]).any() == False :
+	# 		X.append(data[row,2:-1])
+	# 		y.append(data[row,-1])
+	X = scale(X).copy()
+	y = data[:,-1]
 	#spr.eliminate_zeros()
-	return spr,y,data
+	return np.array(X),np.array(y),data
 
 if __name__ == '__main__':
 	Xorig,yorig,data = getdata(fil = 'lessaverage.csv')
@@ -35,7 +45,7 @@ if __name__ == '__main__':
 	filename = path.join(mkdtemp(), 'X.dat')
 	file2 = path.join(mkdtemp(), 'y.dat')
 	X = np.memmap(filename,mode='w+',shape=Xorig.shape,dtype='float32')
-	X[:] = Xorig.toarray()[:]
+	X[:] = Xorig[:]
 	
 	y = np.memmap(file2,mode='w+',shape=yorig.shape,dtype='float32')
 	y[:] = yorig[:]
@@ -43,17 +53,23 @@ if __name__ == '__main__':
 	choices = np.random.choice(np.arange(0,X.shape[0]),size=X.shape[0],replace=False)
 	rs = 2727
 
-	# classifier = svm.SVR(kernel='rbf').fit(X[choices[:10000]], y[choices[:10000]])
+	numtotest = 100000
+	classifier = svm.LinearSVR(C=0.1,dual=False,loss='squared_epsilon_insensitive',\
+		).fit(X[choices[:numtotest]], y[choices[:numtotest]])
 
-	Cs = np.logspace(-2, 3, 6)
-	gammas = np.logspace(-3,3,7)
-	classifier = GridSearchCV(estimator=svm.SVR(), scoring='mean_squared_error',\
-		param_grid=dict(C=Cs,gamma=gammas,kernel=['rbf'])).fit(\
-			X[choices[:10000]], y[choices[:10000]])
+	Cs = np.logspace(-1, 5, 7)
+	gammas = np.logspace(-5,-1,5)
+	classifier = GridSearchCV(estimator=svm.LinearSVR(), scoring='mean_absolute_error',\
+		param_grid=dict(C=Cs,epsilon=[0],dual=[False],loss=['squared_epsilon_insensitive']\
+			)).fit(X[choices[:100000]], y[choices[:100000]])
 
 
 	print classifier.best_score_
 	print classifier.best_estimator_
 
-	# preds = classifier.predict(X[choices[10000:]])
-	# err = np.sum((preds-y[choices[10000:]])**2)/preds.shape[0]
+	preds = classifier.predict(X[choices[numtotest:]])
+	err = np.sum(np.abs(preds-y[choices[numtotest:]]))/preds.shape[0]
+	print err
+
+	# estimator = RandomForestRegressor(random_state=rs, n_estimators=10)
+	# score = cross_val_score(estimator, X, y, scoring='mean_absolute_error')
