@@ -41,7 +41,7 @@ def getdata(fil) :
 def gettestdata(fil) :
 	data = np.genfromtxt(fil,delimiter=',')
 	imp = Imputer(missing_values='NaN', strategy='median', axis=0)
-	X = imp.fit_transform(data[:,2:-1])
+	X = imp.fit_transform(data[:,2:])
 	# X = []
 	# y = []
 	# for row in np.arange(0,data.shape[0]) :
@@ -68,29 +68,33 @@ if __name__ == '__main__':
 	rs = 2727
 
 	numtotest = 100000
-	classifier = svm.LinearSVR(C=0.1,dual=False,loss='squared_epsilon_insensitive',\
-		).fit(X[choices[:numtotest]], y[choices[:numtotest]])
+	# classifier = svm.LinearSVR(C=0.1,dual=False,loss='squared_epsilon_insensitive',\
+	# 	).fit(X[choices[:numtotest]], y[choices[:numtotest]])
 
-	Cs = np.logspace(-1, 5, 7)
-	gammas = np.logspace(-5,-1,5)
-	classifier = GridSearchCV(estimator=svm.LinearSVR(), scoring='mean_absolute_error',\
-		param_grid=dict(C=Cs,epsilon=[0],dual=[False],loss=['squared_epsilon_insensitive']\
-			)).fit(X[choices[:100000]], y[choices[:100000]])
+	# Cs = np.logspace(-1, 5, 7)
+	# gammas = np.logspace(-5,-1,5)
+	# classifier = GridSearchCV(estimator=svm.LinearSVR(), scoring='mean_absolute_error',\
+	# 	param_grid=dict(C=Cs,epsilon=[0],dual=[False],loss=['squared_epsilon_insensitive']\
+	# 		)).fit(X[choices[:100000]], y[choices[:100000]])
 
 
-	print classifier.best_score_
-	print classifier.best_estimator_
+	# print classifier.best_score_
+	# print classifier.best_estimator_
 
+	# preds = classifier.predict(X[choices[numtotest:]])
+	# err = np.sum(np.abs(preds-y[choices[numtotest:]]))/preds.shape[0]
+	# print err
+
+	classifier = RandomForestRegressor(random_state=rs, n_estimators=10).fit(\
+		X[choices[:numtotest]],y[choices[:numtotest]])
+	# score = cross_val_score(estimator, X, y, scoring='mean_absolute_error')
 	preds = classifier.predict(X[choices[numtotest:]])
 	err = np.sum(np.abs(preds-y[choices[numtotest:]]))/preds.shape[0]
 	print err
 
-	# estimator = RandomForestRegressor(random_state=rs, n_estimators=10)
-	# score = cross_val_score(estimator, X, y, scoring='mean_absolute_error')
-
-	Xtestorig = getdata(fil = 'avtest.csv')
+	Xtestorig = gettestdata(fil = 'avtest.csv')
 	filename = path.join(mkdtemp(), 'X.dat')
 	Xtest = np.memmap(filename,mode='w+',shape=Xtestorig.shape,dtype='float32')
 	Xtest[:] = Xtestorig[:]
-
-	preds = classifier.predict(Xtest)
+	Xpreds = classifier.predict(Xtest)
+	
