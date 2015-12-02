@@ -115,10 +115,12 @@ if __name__ == '__main__':
 			ynonans.append([y[row]])
 
 	# Array format
-	Xn = np.array(Xnonans)
+	Xn = np.array(Xnonans) # Still has expected values in final column
 	yn = np.array(ynonans)
 	# Pure training set 
 	# writetest(Xn,'nomissing.csv')
 
 	# Plot Correlation Matrix
-	plot_corr_matrix(Xn)
+	# plot_corr_matrix(Xn)
+
+	
