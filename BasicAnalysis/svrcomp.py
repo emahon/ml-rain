@@ -52,6 +52,14 @@ def gettestdata(fil) :
 	#spr.eliminate_zeros()
 	return np.array(X)
 
+def writetest(Xpreds, fil='testanswers.csv') :
+	import csv
+	csv.field_size_limit(1000000000)
+	outwriter = csv.writer(open(fil,'w'),delimiter=",")
+	rows = np.arange(0,len(Xpreds))
+	for row in rows :
+		outwriter.writerow([row+1,Xpreds[row]])
+
 if __name__ == '__main__':
 	Xorig,yorig,data = getdata(fil = 'lessaverage.csv')
 
@@ -59,7 +67,7 @@ if __name__ == '__main__':
 	filename = path.join(mkdtemp(), 'X.dat')
 	file2 = path.join(mkdtemp(), 'y.dat')
 	X = np.memmap(filename,mode='w+',shape=Xorig.shape,dtype='float32')
-	X[:] = Xorig[:]
+	X[:] = Xorig[:,]
 	
 	y = np.memmap(file2,mode='w+',shape=yorig.shape,dtype='float32')
 	y[:] = yorig[:]
@@ -71,30 +79,29 @@ if __name__ == '__main__':
 	# classifier = svm.LinearSVR(C=0.1,dual=False,loss='squared_epsilon_insensitive',\
 	# 	).fit(X[choices[:numtotest]], y[choices[:numtotest]])
 
-	# Cs = np.logspace(-1, 5, 7)
-	# gammas = np.logspace(-5,-1,5)
-	# classifier = GridSearchCV(estimator=svm.LinearSVR(), scoring='mean_absolute_error',\
-	# 	param_grid=dict(C=Cs,epsilon=[0],dual=[False],loss=['squared_epsilon_insensitive']\
-	# 		)).fit(X[choices[:100000]], y[choices[:100000]])
+	Cs = np.logspace(-1, 5, 7)
+	gammas = np.logspace(-5,-1,5)
+	classifier = GridSearchCV(estimator=svm.LinearSVR(), scoring='mean_absolute_error',\
+		param_grid=dict(C=Cs,epsilon=[0],dual=[False],loss=['squared_epsilon_insensitive']\
+			)).fit(X[choices[:100000]], y[choices[:100000]])
 
+	print classifier.best_score_
+	print classifier.best_estimator_
 
-	# print classifier.best_score_
-	# print classifier.best_estimator_
-
-	# preds = classifier.predict(X[choices[numtotest:]])
-	# err = np.sum(np.abs(preds-y[choices[numtotest:]]))/preds.shape[0]
-	# print err
-
-	classifier = RandomForestRegressor(random_state=rs, n_estimators=10).fit(\
-		X[choices[:numtotest]],y[choices[:numtotest]])
-	# score = cross_val_score(estimator, X, y, scoring='mean_absolute_error')
 	preds = classifier.predict(X[choices[numtotest:]])
 	err = np.sum(np.abs(preds-y[choices[numtotest:]]))/preds.shape[0]
 	print err
 
-	Xtestorig = gettestdata(fil = 'avtest.csv')
-	filename = path.join(mkdtemp(), 'X.dat')
-	Xtest = np.memmap(filename,mode='w+',shape=Xtestorig.shape,dtype='float32')
-	Xtest[:] = Xtestorig[:]
-	Xpreds = classifier.predict(Xtest)
+	# classifier = RandomForestRegressor(random_state=rs, n_estimators=10).fit(\
+	# 	X[choices[:numtotest]],y[choices[:numtotest]])
+	# # score = cross_val_score(estimator, X, y, scoring='mean_absolute_error')
+	# preds = classifier.predict(X[choices[numtotest:]])
+	# err = np.sum(np.abs(preds-y[choices[numtotest:]]))/preds.shape[0]
+	# print err
+
+	# Xtestorig = gettestdata(fil = 'avtest.csv')
+	# filename = path.join(mkdtemp(), 'X.dat')
+	# Xtest = np.memmap(filename,mode='w+',shape=Xtestorig.shape,dtype='float32')
+	# Xtest[:] = Xtestorig[:]
+	# Xpreds = classifier.predict(Xtest)
 	
