@@ -27,13 +27,13 @@ def nonemissing(X) :
 
 	return np.isnan(X).any()
 
-def writetest(Xpreds, fil='testanswers.csv') :
+def writestats(Xpreds, fil='nomissing.csv') :
 	import csv
 	csv.field_size_limit(1000000000)
 	outwriter = csv.writer(open(fil,'w'),delimiter=",")
 	rows = np.arange(0,len(Xpreds))
 	for row in rows :
-		outwriter.writerow([row+1,Xpreds[row]])
+		outwriter.writerow(Xpreds[row])
 
 def plot_corr_matrix(X) :
 	"""
@@ -118,7 +118,7 @@ if __name__ == '__main__':
 	Xn = np.array(Xnonans) # Still has expected values in final column
 	yn = np.array(ynonans)
 	# Pure training set 
-	writetest(Xn,'nomissing.csv')
+	writestats(Xn,'nomissing.csv')
 
 	# Plot Correlation Matrix
 	# plot_corr_matrix(Xn)
