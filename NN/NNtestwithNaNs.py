@@ -1,5 +1,9 @@
 """
-Run keras example for the heck of it. nomissing.csv comes from stats.py
+Same training as kerasNN but will test data.
+Imputes missing values with 0 after scaling.
+Custom scaling had to be written to accommodate this.
+
+Ryan Gooch
 """
 
 from keras.models import Sequential
@@ -9,14 +13,24 @@ from sklearn import cross_validation, preprocessing
 import numpy as np
 import theano
 
-def perc_error(obs, est) :
+def scalenans(X) :
 	"""
-	Calculates percent error between measurements and
-	observed. Mostly for comparison to the literature.
+	Scales 1-D feature vector, ignoring NaNs
+	"""
+	Xscale = (X - np.nanmean(X)) / np.nanstd(X)
+	return Xscale
 
-	Seems to be pretty ridiculously high, might be a bug?
-	"""
-	return np.abs(obs-est) / obs * 100
+def gettestdata(fil) :
+	data = np.genfromtxt(fil,delimiter=',')
+	return data
+
+def writetest(Xpreds, fil='testresultsNN.csv') :
+	import csv
+	csv.field_size_limit(1000000000)
+	outwriter = csv.writer(open(fil,'w'),delimiter=",")
+	rows = np.arange(0,len(Xpreds))
+	for row in rows :
+		outwriter.writerow([row+1,Xpreds[row]])
 
 if __name__ == '__main__':
 	data = np.genfromtxt('nomissing.csv',delimiter=',')
@@ -58,26 +72,24 @@ if __name__ == '__main__':
 	model.compile(loss='mean_absolute_error', optimizer=sgd)
 
 	# Batch size = 100 seems to have stabilized it
-	model.fit(X_train, y_train, nb_epoch=100, batch_size=10000)
+	model.fit(X_train, y_train, nb_epoch=10, batch_size=1000)
 	score = model.evaluate(X_test, y_test, batch_size=16)
 
-	# 3 Dense Layers (64, 64, 1) with linear activation for
-	# regression.
-	#
-	# Batch size | n_epoch | error_in | error_out | time 
-	#	100			10  		4.25		4.29	01 m 00 s
-	#	100			20			4.25		4.26	01 m 44 s						
-	#	1000		10 			3.98		4.06	00 m 52 s
-	#	10000 		10 			3.99 		4.04 	00 m 50 s
-	#	10000		100 		3.98 		3.99 	06 m 11 s
+	# Now import averaged test data
+	Xtest = gettestdata('avtest.csv')
+	Xtest = Xtest[:,2:].copy()
+	Xtest_temp = np.empty((Xtest.shape))
+	# Scale, ignoring NaNs
+	for col in np.arange(0,Xtest.shape[1]) :
+		Xtest_temp[:,col] = scalenans(Xtest[:,col])
 
-	# 3 Dense Layers (32, 16, 1) with linear activation
-	#
-	# Batch size | n_epoch | error_in | error_out | time 
-	#	10000		100  		3.99		4.01	02 m 07 s
+	# Now impute zeros in for NaNs
+	Xtest = np.where(np.isnan(Xtest_temp),0,Xtest_temp)
 
-	# Find percent error
-	preds = model.predict(X_test,batch_size=16)
-	preds = preds[:,0].copy()
+	# OK, let's try to test this. Gonna be blind for the first
+	# time due to limited time for the submission before 
+	# we lose it.
+	preds = model.predict(Xtest, batch_size=16, verbose=1)
 
-	percenterror = perc_error(y_test,preds)
+	# Now save it!
+	writetest(preds[:,0])
