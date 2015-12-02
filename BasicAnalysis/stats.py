@@ -118,7 +118,7 @@ if __name__ == '__main__':
 	Xn = np.array(Xnonans) # Still has expected values in final column
 	yn = np.array(ynonans)
 	# Pure training set 
-	# writetest(Xn,'nomissing.csv')
+	writetest(Xn,'nomissing.csv')
 
 	# Plot Correlation Matrix
 	# plot_corr_matrix(Xn)

@@ -1,5 +1,5 @@
 """
-Run keras example for the heck of it
+Run keras example for the heck of it. nomissing.csv comes from stats.py
 """
 
 from keras.models import Sequential
