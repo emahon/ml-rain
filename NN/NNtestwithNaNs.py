@@ -9,9 +9,11 @@ Ryan Gooch
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation
 from keras.optimizers import SGD
+from keras.regularizers import l2
 from sklearn import cross_validation, preprocessing
 import numpy as np
 import theano
+import matplotlib.pyplot as plt
 
 def scalenans(X) :
 	"""
@@ -19,6 +21,22 @@ def scalenans(X) :
 	"""
 	Xscale = (X - np.nanmean(X)) / np.nanstd(X)
 	return Xscale
+
+def vecnorm(X) :
+	"""
+	Scales data to -1 to 1 range
+	"""
+	Xtemp = X - np.min(X)
+	Xnorm = Xtemp * 2 / np.max(Xtemp) - 1
+	return Xnorm
+
+def normnans(X) :
+	"""
+	Normalizes data if nans presents
+	"""
+	temp = X - np.nanmin(X)
+	Xnorm = temp * 2 / np.nanmax(temp)
+	return Xnorm
 
 def gettestdata(fil) :
 	data = np.genfromtxt(fil,delimiter=',')
@@ -44,25 +62,32 @@ if __name__ == '__main__':
 	theano.config.compute_test_value = 'warn'
 
 	# Need to scale data or else it blows up
-	X = preprocessing.scale(X).copy()
+	#X = preprocessing.scale(X).copy()
+	X = vecnorm(X).copy()
+	print X.max()
+
+	# Log Transform y
+	# y = np.log(y).copy()
 
 	# Train/test split for comparison
-	X_train, X_test, y_train, y_test = \
-		cross_validation.train_test_split(X, y, \
-			test_size=0.4, random_state=rs)
+	# X_train, X_test, y_train, y_test = \
+	# 	cross_validation.train_test_split(X, y, \
+	# 		test_size=0.4, random_state=rs)
 
+	# Use ALL the training data this time
+	X_train = X
+	y_train = y
 
 	model = Sequential()
 	# Dense(64) is a fully-connected layer with 64 hidden units.
-	# in the first layer, you must specify the expected input data shape:
-	# here, 20-dimensional vectors.
-	model.add(Dense(32, input_dim=X.shape[1], init='uniform'))
+	# in the first layer, you must specify the expected input data shape
+	model.add(Dense(64, input_dim=X.shape[1], init='he_normal'))#, W_regularizer=l2(0.1)))
 	model.add(Activation('tanh'))
 	model.add(Dropout(0.5))
-	model.add(Dense(16, init='uniform',input_dim=32))
+	model.add(Dense(32, init='he_normal',input_dim=64))#, W_regularizer=l2(0.1)))
 	model.add(Activation('tanh'))
 	model.add(Dropout(0.5))
-	model.add(Dense(1, init='uniform',input_dim=16))
+	model.add(Dense(1, init='he_normal',input_dim=32))#, W_regularizer=l2(0.1)))
 	model.add(Activation('linear'))
 
 	sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
@@ -73,15 +98,16 @@ if __name__ == '__main__':
 
 	# Batch size = 100 seems to have stabilized it
 	model.fit(X_train, y_train, nb_epoch=10, batch_size=1000)
-	score = model.evaluate(X_test, y_test, batch_size=16)
-
+	# score = model.evaluate(X_test, y_test, batch_size=1000)
+	# preds = model.predict(Xtest, batch_size=1000, verbose=1)
+	# print score
 	# Now import averaged test data
 	Xtest = gettestdata('avtest.csv')
 	Xtest = Xtest[:,2:].copy()
 	Xtest_temp = np.empty((Xtest.shape))
 	# Scale, ignoring NaNs
 	for col in np.arange(0,Xtest.shape[1]) :
-		Xtest_temp[:,col] = scalenans(Xtest[:,col])
+		Xtest_temp[:,col] = normnans(Xtest[:,col])
 
 	# Now impute zeros in for NaNs
 	Xtest = np.where(np.isnan(Xtest_temp),0,Xtest_temp)
@@ -92,4 +118,4 @@ if __name__ == '__main__':
 	preds = model.predict(Xtest, batch_size=16, verbose=1)
 
 	# Now save it!
-	writetest(preds[:,0])
+	writetest(preds[:,0], fil='testresultsNNall.csv')
