@@ -12,7 +12,7 @@ a measure of accuracy
 """
 def test():
     #read the csv file into a numpy ndarray
-    data = read("../average.csv")
+    data = read("average.csv")
     print "Data read"
     rand.shuffle(data)
     split = numpy.floor(.8*data.shape[0])
@@ -31,14 +31,14 @@ an acutal output for the competition
 """
 def output():
     #read in training set
-    train = read("../average.csv")
+    train = read("average.csv")
     Xtrain = train[:,:-1]
     ytrain = train[:,-1]
     #put model here
     mod = model(Xtrain,ytrain)
     print mod.get_params()
     #now test
-    test = read("../avtest.csv")
+    test = read("avtest.csv")
     to_output.to_output(mod.predict(test),"predictions2.csv")
 
     
@@ -49,10 +49,10 @@ Actual model to run
 """
 def model(X,y):
     xg = xgboost.XGBRegressor()
-    params = [{'max_depth':numpy.linspace(2,10,9).astype(int),
-        'learning_rate':numpy.logspace(-3,1,5),
+    params = [{'max_depth':numpy.linspace(6,10,5).astype(int),
+        'learning_rate':numpy.logspace(-2,1,3),
         'n_estimators':numpy.linspace(90,110,5).astype(int)}]
-    gridres = grid.GridSearchCV(estimator=xg,param_grid=params,cv=5)
+    gridres = grid.GridSearchCV(estimator=xg,param_grid=params,cv=3)
     return gridres.fit(X,y)
 
 
