@@ -12,7 +12,7 @@ a measure of accuracy
 """
 def test():
     #read the csv file into a numpy ndarray
-    data = read("../average.csv")
+    data = read("../nomissing.csv")
     print "Data read"
     rand.shuffle(data)
     split = numpy.floor(.8*data.shape[0])
@@ -22,7 +22,7 @@ def test():
     ytest = data[split:,-1]
     #put model here
     mod = model(Xtrain,ytrain)
-    print mod.score(Xtest,ytest)
+    print numpy.mean(numpy.abs(mod.predict(Xtest) - ytest)/ytest)
     print mod.get_params()
 
 """

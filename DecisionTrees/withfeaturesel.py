@@ -15,7 +15,7 @@ a measure of accuracy
 """
 def test():
     #read the csv file into a numpy ndarray
-    data = read("../average.csv")
+    data = read("../nomissing.csv")
     print "Data read"
     rand.shuffle(data)
     split = numpy.floor(.8*data.shape[0])
@@ -25,7 +25,7 @@ def test():
     ytest = data[split:,-1]
     #put model here
     mod = model(Xtrain,ytrain)
-    print mod.score(Xtest,ytest)
+    print numpy.mean(numpy.abs(mod.predict(Xtest) - ytest)/ytest)
     print mod.get_params()
 
 """
@@ -43,7 +43,7 @@ def output():
     print mod.get_params()
     #now test
     test = read("../avtest.csv")
-    to_output.to_output(mod.predict(test),"predictions2.csv")
+    to_output.to_output(mod.predict(test),"predictions3.csv")
 
 
 """
@@ -57,9 +57,9 @@ def model(X,y):
     print "Data transformed"
     #create the model
     xg = xgboost.XGBRegressor()
-    params = [{'max_depth':numpy.linspace(2,5,4).astype(int),
-        'learning_rate':numpy.logspace(-3,1,5),
-        'n_estimators':numpy.linspace(90,110,5).astype(int)}]
+    params = [{'max_depth':numpy.linspace(2,4,3).astype(int),
+        'learning_rate':numpy.logspace(-2,0,3),
+        'n_estimators':numpy.linspace(95,105,5).astype(int)}]
     gridres = grid.GridSearchCV(estimator=xg,param_grid=params,cv=3)
     return gridres.fit(Xt,y)
 
