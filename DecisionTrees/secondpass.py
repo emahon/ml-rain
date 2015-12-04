@@ -52,7 +52,8 @@ def model(X,y):
     xg = xgboost.XGBRegressor()
     params = [{'max_depth':numpy.linspace(3,6,4).astype(int),
         'learning_rate':numpy.logspace(-3,1,5),
-        'n_estimators':numpy.linspace(90,110,5).astype(int)}]
+        'n_estimators':numpy.linspace(90,110,5).astype(int),
+        'n_threads':[1]}]
     gridres = grid.GridSearchCV(estimator=xg,param_grid=params,cv=3)
     return gridres.fit(X,y)
 
