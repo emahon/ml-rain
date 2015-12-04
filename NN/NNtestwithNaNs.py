@@ -69,7 +69,7 @@ def genlabels(y, nbins = 100) :
 
 if __name__ == '__main__':
 	data = np.genfromtxt('nomissing.csv',delimiter=',')
-	yorig = data[:,-1]
+	y = data[:,-1]
 	X = data[:,2:-1] # Peel off ID and minutes past, as well as y
 
 	#Set random state\
@@ -90,13 +90,13 @@ if __name__ == '__main__':
 	# bins, y = genlabels(yorig, nbins = 100)
 
 	# Train/test split for comparison
-	# X_train, X_test, y_train, y_test = \
-	# 	cross_validation.train_test_split(X, y, \
-	# 		test_size=0.4, random_state=rs)
+	X_train, X_test, y_train, y_test = \
+		cross_validation.train_test_split(X, y, \
+			test_size=0.4, random_state=rs)
 
 	# Use ALL the training data this time
-	X_train = X
-	y_train = yorig
+	# X_train = X
+	# y_train = yorig
 
 	model = Sequential()
 	# Dense(64) is a fully-connected layer with 64 hidden units.
@@ -138,4 +138,4 @@ if __name__ == '__main__':
 	preds = model.predict(Xtest, batch_size=16, verbose=1)
 
 	# Now save it!
-	writetest(preds[:,0], fil='testresultsNNallstandardized.csv')
+	writetest(preds[:,0], fil='testresultsNN.60pct.standardized.csv')
