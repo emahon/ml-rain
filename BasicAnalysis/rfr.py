@@ -72,18 +72,18 @@ if __name__ == '__main__':
 	err = np.sum(np.abs(preds-y_test))/preds.shape[0]
 	print err
 
-	# # Test it!
-	# Xtest = gettestdata('avtest.csv')
-	# Xtest = Xtest[:,2:].copy()
-	# Xtest_temp = np.empty((Xtest.shape))
-	# # Scale, ignoring NaNs
-	# for col in np.arange(0,Xtest.shape[1]) :
-	# 	Xtest_temp[:,col] = scalenans(Xtest[:,col])
+	# Test it!
+	Xtest = gettestdata('avtest.csv')
+	Xtest = Xtest[:,2:].copy()
+	Xtest_temp = np.empty((Xtest.shape))
+	# Scale, ignoring NaNs
+	for col in np.arange(0,Xtest.shape[1]) :
+		Xtest_temp[:,col] = scalenans(Xtest[:,col])
 
-	# # Now impute zeros in for NaNs
-	# Xtest = np.where(np.isnan(Xtest_temp),0,Xtest_temp)
-	# preds = reg.predict(Xtest)
-	# writetest(preds, fil='RFR.200.60pct.standardized.csv')
+	# Now impute zeros in for NaNs
+	Xtest = np.where(np.isnan(Xtest_temp),0,Xtest_temp)
+	preds = reg.predict(Xtest)
+	writetest(preds, fil='RFR.200.60pct.standardized.csv')
 
 	# numtotest = X.shape[0]*2/3
 	# classifier = svm.LinearSVR(C=0.1,dual=False,loss='squared_epsilon_insensitive',\

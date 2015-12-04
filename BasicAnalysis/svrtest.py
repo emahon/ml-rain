@@ -134,11 +134,13 @@ if __name__ == '__main__':
 	classifier_e = classify_GS(e,ey)
 
 	# Now generate a test
-	X= gettestdata('avtest.csv')
-	X = X[:,np.ix_([2,3,15,19])][:,0] # radardist, Ref, ZDR, KDP
-	
-	Xorig = X
-	Xorig = scale(Xorig).copy()
+	Xtest = gettestdata('avtest.csv')
+	Xtest = Xtest[:,2:].copy()
+	Xtest_temp = np.empty((Xtest.shape))
+	# Scale, ignoring NaNs
+	for col in np.arange(0,Xtest.shape[1]) :
+		Xtest_temp[:,col] = scalenans(Xtest[:,col])
+		
 	file1 = path.join(mkdtemp(), 'Xorig.dat')
 	X = np.memmap(file1,mode='w+',shape=Xorig.shape,dtype='float32')
 	X[:] = Xorig[:]

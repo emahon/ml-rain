@@ -1,7 +1,8 @@
 from keras.models import Sequential
-from keras.layers.core import Dense, Dropout, Activation
+from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.optimizers import SGD
 from keras.regularizers import l2
+from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from sklearn import cross_validation, preprocessing, metrics
 import numpy as np
 import theano
@@ -107,6 +108,33 @@ def NNrandstatecheck(X_train,y_train,X_test) :
 	model.fit(X_train, y_train, nb_epoch=10, batch_size=1000)
 	preds3 = model.predict(X_test, batch_size=1000, verbose=1)
 	return preds1,preds2,preds3
+
+def stacked(X_train,y_train,X_test) :
+	"""
+	Fat stacks of models!
+	"""
+
+	# NN to generate features
+	model = Sequential()
+
+	# input: 100x100 images with 3 channels -> (3, 100, 100) tensors.
+	# this applies 32 convolution filters of size 3x3 each.
+	model.add(Dense(128, input_dim=X_train.shape[1], init='he_normal'))#, W_regularizer=l2(0.1)))
+	model.add(Activation('tanh'))
+	model.add(Dropout(0.5))
+	model.add(Dense(64, init='he_normal',input_dim=128))#, W_regularizer=l2(0.1)))
+	model.add(Activation('tanh'))
+	model.add(Dropout(0.5))
+	model.add(Dense(32, init='he_normal',input_dim=64))#, W_regularizer=l2(0.1)))
+	finfeats = model.add(Activation('tanh'))
+	model.add(Dense(1, init='he_normal',input_dim=32))#, W_regularizer=l2(0.1)))
+	model.add(Activation('linear'))
+
+	sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
+	model.compile(loss='mean_absolute_error', optimizer=sgd)
+	model.fit(X_train, y_train, nb_epoch=10, batch_size=1000,
+					validation_split = 0.2, shuffle=True)
+	# preds = model.predict(X_test, batch_size=1000, verbose=1)
 	
 if __name__ == '__main__':
 	data = np.genfromtxt('nomissing.csv',delimiter=',')

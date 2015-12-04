@@ -138,4 +138,4 @@ if __name__ == '__main__':
 	preds = model.predict(Xtest, batch_size=16, verbose=1)
 
 	# Now save it!
-	writetest(preds[:,0], fil='testresultsNN.60pct.standardized.csv')
+	writetest(preds[:,0], fil='NN.128.64.32.60pct.csv')

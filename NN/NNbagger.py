@@ -89,7 +89,7 @@ if __name__ == '__main__':
 	X = preprocessing.scale(X).copy()
 
 	# Build regressor 
-	BaggingRegressor(base_estimator=nnbagger(),
+	model = BaggingRegressor(base_estimator=nnbagger(),
 						n_estimators=10,
 						bootstrap=True,
 						random_state=rs,
