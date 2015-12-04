@@ -10,71 +10,91 @@ from sklearn import cross_validation,svm,metrics
 from tempfile import mkdtemp
 import os.path as path
 from sklearn.grid_search import GridSearchCV
-from sklearn.preprocessing import Imputer, scale
+from sklearn import preprocessing
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.cross_validation import cross_val_score
+from sklearn.metrics import accuracy_score
 
 def getdata(fil) :
-	data = np.genfromtxt(fil,delimiter=',')
-	imp = Imputer(missing_values='NaN', strategy='median', axis=0)
-	X = imp.fit_transform(data[:,2:-1])
-	# X = []
-	# y = []
-	# for row in np.arange(0,data.shape[0]) :
-	# 	if np.isnan(data[row]).any() == False :
-	# 		X.append(data[row,2:-1])
-	# 		y.append(data[row,-1])
-	X = scale(X).copy()
+	data = np.genfromtxt('nomissing.csv',delimiter=',')
 	y = data[:,-1]
-	#spr.eliminate_zeros()
-	return np.array(X),np.array(y),data
+	X = data[:,2:-1] # Peel off ID and minutes past, as well as y
+	return X,y,data
 
 def gettestdata(fil) :
 	data = np.genfromtxt(fil,delimiter=',')
-	imp = Imputer(missing_values='NaN', strategy='median', axis=0)
-	X = imp.fit_transform(data[:,2:])
-	# X = []
-	# y = []
-	# for row in np.arange(0,data.shape[0]) :
-	# 	if np.isnan(data[row]).any() == False :
-	# 		X.append(data[row,2:-1])
-	# 		y.append(data[row,-1])
-	X = scale(X).copy()
-	#spr.eliminate_zeros()
-	return np.array(X)
+	return data
+
+def writetest(Xpreds, fil='testresultsNN.csv') :
+	import csv
+	csv.field_size_limit(1000000000)
+	outwriter = csv.writer(open(fil,'w'),delimiter=",")
+	rows = np.arange(0,len(Xpreds))
+	for row in rows :
+		outwriter.writerow([row+1,Xpreds[row]])
+
+def scalenans(X) :
+	"""
+	Scales 1-D feature vector, ignoring NaNs
+	"""
+	Xscale = (X - np.nanmean(X)) / np.nanstd(X)
+	return Xscale
 
 if __name__ == '__main__':
-	Xorig,yorig,data = getdata(fil = 'average.csv')
+	X,y,data = getdata(fil = 'nomissing.csv')
 
-	print yorig.shape
-	filename = path.join(mkdtemp(), 'X.dat')
-	file2 = path.join(mkdtemp(), 'y.dat')
-	X = np.memmap(filename,mode='w+',shape=Xorig.shape,dtype='float32')
-	X[:] = Xorig[:]
+	# print yorig.shape
+	# filename = path.join(mkdtemp(), 'X.dat')
+	# file2 = path.join(mkdtemp(), 'y.dat')
+	# X = np.memmap(filename,mode='w+',shape=Xorig.shape,dtype='float32')
+	# X[:] = Xorig[:]
 	
-	y = np.memmap(file2,mode='w+',shape=yorig.shape,dtype='float32')
-	y[:] = yorig[:]
+	# y = np.memmap(file2,mode='w+',shape=yorig.shape,dtype='float32')
+	# y[:] = yorig[:]
 	# Take small sample
-	choices = np.random.choice(np.arange(0,X.shape[0]),size=X.shape[0],replace=False)
+	# choices = np.random.choice(np.arange(0,X.shape[0]),size=X.shape[0],replace=False)
 	rs = 2727
 
-	numtotest = X.shape[0]*2/3
+	# Need to scale data or else it blows up
+	X = preprocessing.scale(X).copy()
+
+	# Train/test split for comparison
+	X_train, X_test, y_train, y_test = \
+		cross_validation.train_test_split(X, y, \
+			test_size=0.4, random_state=rs)
+
+	# Big RFR
+	reg = RandomForestRegressor(n_estimators=200, oob_score=True,
+								random_state=rs,n_jobs=-1)
+	reg.fit(X_train,y_train)
+	preds = reg.predict(X_test)
+	
+	err = np.sum(np.abs(preds-y_test))/preds.shape[0]
+	print err
+
+	# Test it!
+	Xtest = gettestdata('avtest.csv')
+	Xtest = scalenans(Xtest).copy()
+	
+
+
+	# numtotest = X.shape[0]*2/3
 	# classifier = svm.LinearSVR(C=0.1,dual=False,loss='squared_epsilon_insensitive',\
 	# 	).fit(X[choices[:numtotest]], y[choices[:numtotest]])
 
-	n_estimators_list = np.array([5,10,25,50,100])
-	gammas = np.logspace(-5,-1,5)
-	classifier = GridSearchCV(estimator=RandomForestRegressor(), scoring='mean_absolute_error',\
-		param_grid=dict(n_estimators=n_estimators_list,n_jobs=[-1],\
-			)).fit(X[choices[:numtotest]], y[choices[:numtotest]])
+	# n_estimators_list = np.array([5,10,25,50,100])
+	# gammas = np.logspace(-5,-1,5)
+	# classifier = GridSearchCV(estimator=RandomForestRegressor(), scoring='mean_absolute_error',\
+	# 	param_grid=dict(n_estimators=n_estimators_list,n_jobs=[-1],\
+	# 		)).fit(X[choices[:numtotest]], y[choices[:numtotest]])
 
 
-	print classifier.best_score_
-	print classifier.best_estimator_
+	# print classifier.best_score_
+	# print classifier.best_estimator_
 
-	preds = classifier.predict(X[choices[numtotest:]])
-	err = np.sum(np.abs(preds-y[choices[numtotest:]]))/preds.shape[0]
-	print err
+	# preds = classifier.predict(X[choices[numtotest:]])
+	# err = np.sum(np.abs(preds-y[choices[numtotest:]]))/preds.shape[0]
+	# print err
 
 	# classifier = RandomForestRegressor(random_state=rs, n_estimators=100).fit(\
 	# 	X[choices[:numtotest]],y[choices[:numtotest]])
