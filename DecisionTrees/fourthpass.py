@@ -43,7 +43,7 @@ def output():
     print mod.get_params()
     #now test
     test = read("../avtest.csv")
-    to_output.to_output(mod.predict(test),"predictions3.csv")
+    to_output.to_output(mod.predict(test),"predictions4.csv")
 
 
 """
@@ -59,7 +59,9 @@ def model(X,y):
     xg = xgboost.XGBRegressor()
     params = [{'max_depth':numpy.linspace(2,4,3).astype(int),
         'learning_rate':numpy.logspace(-2,0,3),
-        'n_estimators':numpy.linspace(95,105,5).astype(int)}]
+        'n_estimators':numpy.linspace(95,105,5).astype(int),
+        'gamma':numpy.logspace(-2,3,6),
+        'min_child_weight':numpy.linspace(1,5,5).astype(int)}]
     gridres = grid.GridSearchCV(estimator=xg,param_grid=params,cv=3)
     return gridres.fit(Xt,y)
 

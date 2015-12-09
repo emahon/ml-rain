@@ -10,7 +10,7 @@ import numpy
 import numpy.random as rand
 import xgboost
 import to_output
-import sklearn.feature_selection as select
+import matplotlib.pyplot as plt
 
 #read the csv file into a numpy ndarray
 inputreader = csv.reader(open("../average.csv",'r'), delimiter=",")
@@ -27,21 +27,30 @@ for row in inputreader:
 
 data = numpy.array(data)
 print data.shape
+#split into test and train
 rand.shuffle(data)
-Xtrain = data[:,:-1]
-ytrain = data[:,-1]
-#feature selection
-selector = select.RFECV(xgboost.XGBRegressor(),step=.2)
-Xnew = selector.fit_transform(Xtrain,ytrain)
+split = numpy.floor(.8*data.shape[0])
+Xtrain = data[:split,:-1]
+ytrain = data[:split,-1]
+#Xtest = data[split:,:-1]
+#ytest = data[split:,-1]
 #train the model
-dtrain = xgboost.DMatrix(Xnew,label=ytrain,missing=float("nan"))
+dtrain = xgboost.DMatrix(Xtrain,label=ytrain,missing=float("nan"))
 params = dict()
 model = xgboost.train(params,dtrain)
+#dtest = xgboost.DMatrix(Xtest, missing=float("nan"))
+#run a prediction to test
+#pred = model.predict(dtest)
+#vals = numpy.abs(pred - ytest)/ytest
+#print numpy.mean(vals)
 #clean up old data to free memory
 data = []
 Xtrain = []
 ytrain = []
+#Xtest = []
+#ytest = []
 dtrain = []
+#dtest = []
 gc.collect()
 print "cleaning memory...."
 #now run on the actual testing data for kaggle
@@ -70,4 +79,8 @@ print test.shape
 dfintest = xgboost.DMatrix(test,missing=float("nan"))
 finpred = model.predict(dfintest)
 print finpred
-to_output.to_output(finpred,"predictions.csv")
+to_output.to_output(finpred,"xpredictions.csv")
+xgboost.plot_importance(model)
+plt.show()
+xgboost.plot_tree(model)
+plt.show()

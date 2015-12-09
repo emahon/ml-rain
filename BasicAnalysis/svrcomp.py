@@ -61,7 +61,7 @@ def writetest(Xpreds, fil='testanswers.csv') :
 		outwriter.writerow([row+1,Xpreds[row]])
 
 if __name__ == '__main__':
-	Xorig,yorig,data = getdata(fil = 'lessaverage.csv')
+	Xorig,yorig,data = getdata(fil = 'average.csv')
 
 	print yorig.shape
 	filename = path.join(mkdtemp(), 'X.dat')
